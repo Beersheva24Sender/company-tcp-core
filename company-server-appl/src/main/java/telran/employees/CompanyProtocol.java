@@ -1,15 +1,17 @@
 package telran.employees;
+
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 import org.json.JSONArray;
+import java.lang.reflect.Method;
 
 import telran.net.Protocol;
 import telran.net.Request;
 import telran.net.Response;
 import telran.net.ResponseCode;
 
-public class CompanyProtocol implements Protocol{
+public class CompanyProtocol implements Protocol {
     Company company;
 
     public CompanyProtocol(Company company) {
@@ -18,23 +20,23 @@ public class CompanyProtocol implements Protocol{
 
     @Override
     public Response getResponse(Request request) {
+
         String requestType = request.requestType();
         String requestData = request.requestData();
-        Response response = null;
+
         try {
-            response = switch (requestType) {
-                case "addEmployee" -> addEmployee(requestData);
-                case "getEmployee" -> getEmployee(requestData);
-                case "removeEmployee" -> removeEmployee(requestData);
-                case "getDepartmentBudget" -> getDepartmentBudget(requestData);
-                case "getDepartments" -> getDepartments(requestData);
-                case "getManagersWithMostFactor" -> getManagersWithMostFactor(requestData);
-                default -> new Response(ResponseCode.WRONG_TYPE, requestType + " Wrong type");
-            };
+            Method method = this.getClass().getDeclaredMethod(requestType, String.class);
+            method.setAccessible(true);
+            return (Response) method.invoke(this, requestData);
+
+        } catch (NoSuchMethodException e) {
+            return new Response(ResponseCode.WRONG_DATA, "Method not found: " + requestType);
+        } catch (ClassCastException e) {
+            return new Response(ResponseCode.WRONG_DATA, "Invalid return type for method: " + requestType);
         } catch (Exception e) {
-            response = new Response(ResponseCode.WRONG_DATA, e.getMessage());
+            return new Response(ResponseCode.WRONG_DATA, "An error occurred: " + e.getMessage());
         }
-        return response;
+
     }
 
     Response getOkResponse(String responseData) {
