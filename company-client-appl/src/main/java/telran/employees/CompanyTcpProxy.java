@@ -32,45 +32,26 @@ public class CompanyTcpProxy implements Company {
     public String[] getDepartments() {
         String jsonStr = tcpClient.sendAndReceive("getDepartments", "");
         JSONArray jsonArray = new JSONArray(jsonStr);
-        return jsonArray.toList().toArray(new String[0]);
+        return jsonArray.toList().toArray(String[]::new);
     }
 
     @Override
     public Employee getEmployee(long id) {
         String response = tcpClient.sendAndReceive("getEmployee", String.valueOf(id));
-        if (response == null || response.isEmpty()) {
-            return null;
-        }
-        JSONObject json = new JSONObject(response);
-        return fromJson(json);
+        return Employee.getEmployeeFromJSON(response);
     }
 
     @Override
     public Manager[] getManagersWithMostFactor() {
         String response = tcpClient.sendAndReceive("getManagersWithMostFactor", "");
-        JSONArray jsonArray = new JSONArray(response);
-        Manager[] managers = new Manager[jsonArray.length()];
-        for (int i = 0; i < jsonArray.length(); i++) {
-            managers[i] = Manager.fromJson(jsonArray.getJSONObject(i));
-        }
-        return managers;
+        Manager[] res = new JSONArray(response).toList().stream().map(Object::toString)
+                .map(Employee::getEmployeeFromJSON).toArray(Manager[]::new);
+        return res;
     }
 
     @Override
     public Employee removeEmployee(long id) {
-        String response = tcpClient.sendAndReceive("removeEmployee", String.valueOf(id));
-        if (response == null || response.isEmpty()) {
-            return null;
-        }
-        JSONObject json = new JSONObject(response);
-        return fromJson(json);
-    }
-
-    public static Employee fromJson(JSONObject json) {
-
-        long id = json.getLong("id");
-        int basicSalary = json.getInt("basicSalary");
-        String department = json.getString("department");
-        return new Employee(id, basicSalary, department);
+        String response = tcpClient.sendAndReceive("removeEmployee", "" + id);
+        return Employee.getEmployeeFromJSON(response);
     }
 }
