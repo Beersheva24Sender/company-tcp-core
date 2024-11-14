@@ -31,8 +31,6 @@ public class CompanyProtocol implements Protocol {
 
         } catch (NoSuchMethodException e) {
             return new Response(ResponseCode.WRONG_DATA, "Method not found: " + requestType);
-        } catch (ClassCastException e) {
-            return new Response(ResponseCode.WRONG_DATA, "Invalid return type for method: " + requestType);
         } catch (Exception e) {
             return new Response(ResponseCode.WRONG_DATA, "An error occurred: " + e.getMessage());
         }
