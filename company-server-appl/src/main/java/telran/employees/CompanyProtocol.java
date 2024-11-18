@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 import org.json.JSONArray;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 
 import telran.net.Protocol;
 import telran.net.Request;
@@ -20,21 +20,26 @@ public class CompanyProtocol implements Protocol {
 
     @Override
     public Response getResponse(Request request) {
-
         String requestType = request.requestType();
         String requestData = request.requestData();
-
+        Response response = null;
         try {
-            Method method = this.getClass().getDeclaredMethod(requestType, String.class);
+            Method method = CompanyProtocol.class.getDeclaredMethod(requestType, String.class);
             method.setAccessible(true);
-            return (Response) method.invoke(this, requestData);
-
+            response = (Response) method.invoke(this, requestData);
         } catch (NoSuchMethodException e) {
-            return new Response(ResponseCode.WRONG_DATA, "Method not found: " + requestType);
-        } catch (Exception e) {
-            return new Response(ResponseCode.WRONG_DATA, "An error occurred: " + e.getMessage());
+            response = new Response(ResponseCode.WRONG_TYPE, requestType + " Wrong type");
+           
+        } catch (InvocationTargetException e) {
+            Throwable causeExc = e.getCause();
+            String message = causeExc == null ? e.getMessage() : causeExc.getMessage();
+            response = new Response(ResponseCode.WRONG_DATA, message);
+        } catch (Exception e){
+            //only for finishing Server and printing out Exception full stack
+            throw new RuntimeException(e);
         }
-
+       
+        return response;
     }
 
     Response getOkResponse(String responseData) {
