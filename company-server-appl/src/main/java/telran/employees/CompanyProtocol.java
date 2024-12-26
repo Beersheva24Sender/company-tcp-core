@@ -1,10 +1,10 @@
 package telran.employees;
 
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 import org.json.JSONArray;
-import java.lang.reflect.*;
 
 import telran.net.Protocol;
 import telran.net.Request;
@@ -29,16 +29,16 @@ public class CompanyProtocol implements Protocol {
             response = (Response) method.invoke(this, requestData);
         } catch (NoSuchMethodException e) {
             response = new Response(ResponseCode.WRONG_TYPE, requestType + " Wrong type");
-           
+
         } catch (InvocationTargetException e) {
             Throwable causeExc = e.getCause();
             String message = causeExc == null ? e.getMessage() : causeExc.getMessage();
             response = new Response(ResponseCode.WRONG_DATA, message);
-        } catch (Exception e){
-            //only for finishing Server and printing out Exception full stack
+        } catch (Exception e) {
+            // only for finishing Server and printing out Exception full stack
             throw new RuntimeException(e);
         }
-       
+
         return response;
     }
 
